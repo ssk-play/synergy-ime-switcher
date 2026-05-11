@@ -1,0 +1,5 @@
+switch-ime
+run.log
+run.err.log
+*.dSYM/
+.DS_Store
