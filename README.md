@@ -21,8 +21,8 @@ transition, so the trigger is exact and effectively free.
 
 ## Requirements
 
-- macOS, Synergy 3 (Synergy 1 / Barrier should also work if the log
-  format is the same)
+- macOS, Synergy 3 **or Synergy 1** (Barrier may also work — same log
+  format). For Synergy 1, see [Synergy 1 setup](#synergy-1-setup) below.
 - Xcode Command Line Tools (for `swiftc`)
 
 ## Install
@@ -34,8 +34,27 @@ transition, so the trigger is exact and effectively free.
 
 What it does:
 1. Compiles `switch-ime.swift` → `./switch-ime`
-2. Installs `~/Library/LaunchAgents/com.sskplay.synergy-ime-switcher.plist`
-3. `launchctl load`s the job
+2. Detects the Synergy log path (Synergy 1 puts it elsewhere — see below)
+3. Installs `~/Library/LaunchAgents/com.sskplay.synergy-ime-switcher.plist`
+4. `launchctl load`s the job
+
+## Synergy 1 setup
+
+Synergy 1 only writes its log to a file when **"Save log to file"** is
+enabled in its preferences (Synergy 3 writes the log by default). Before
+running `./install.sh`, turn file logging on by either:
+
+- Synergy → Settings → check **"Save log to file"**, or
+- `defaults write com.symless.synergy logToFile -bool true`
+
+Then quit and relaunch Synergy so `synergy-server` is restarted with
+`--log <path>`. `install.sh` then auto-detects the path (from the
+running process or `defaults read com.symless.synergy logFilename`) and
+injects `SYNERGY_LOG` into the launchd plist — no manual editing
+required.
+
+If `install.sh` detects Synergy 1 with file logging disabled, it prints
+a warning and skips the injection. Fix the preference and re-run.
 
 ## Uninstall
 
@@ -54,7 +73,7 @@ the job (`launchctl unload && load`) for changes to take effect.
 | Variable | Default |
 |---|---|
 | `ENGLISH_IME` | `com.apple.keylayout.ABC` |
-| `SYNERGY_LOG` | `~/Library/Logs/Synergy/synergy.log` |
+| `SYNERGY_LOG` | `~/Library/Logs/Synergy/synergy.log` (Synergy 3 default; `install.sh` auto-fills the right path for Synergy 1) |
 | `STATE_FILE`  | `~/Library/Caches/synergy-ime-switcher.last` |
 | `NO_RESTORE`  | (unset) — if set to any value, do not restore on `entering` (same as `--no-restore`) |
 
